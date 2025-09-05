@@ -22,7 +22,7 @@ function defaultPlayers() {
   return [
     { id: uid(), name: 'Coppi',  x: 183, y: 409, slots: 4 },
     { id: uid(), name: 'UkKAmi', x: 183, y: 413, slots: 4 },
-    { id: uid(), name: 'Coocie', x: 191, y: 405, slots: 4 },
+    { id: uid(), name: 'Cookie', x: 191, y: 405, slots: 4 },
     { id: uid(), name: 'Vanm',   x: 195, y: 417, slots: 4 },
     { id: uid(), name: 'tea',    x: 171, y: 405, slots: 4 },
     { id: uid(), name: 'CHT',    x: 195, y: 393, slots: 4 },
