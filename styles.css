@@ -228,7 +228,17 @@ canvas#map { width: 100%; height: 100%; background: radial-gradient(1200px 800px
 .pot-item:last-child { border-bottom: none; }
 .pot-item .who { font-weight: 600; }
 .pot-item .small { color: var(--muted); font-size: 12px; }
-.badge.lock { background: #8b8f9c; color: #0b1020; }
+.badge.lock {
+  background: #8b8f9c;
+  color: #0b1020;
+  width: auto;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
 
 /* Collapsible blocks */
 .collapsible { border: 1px solid #242a44; border-radius: 8px; padding: 8px; background: #0f1322; }
