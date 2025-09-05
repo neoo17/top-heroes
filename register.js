@@ -167,11 +167,18 @@ async function main(){
   const coordsWrap=document.getElementById('coordsWrap');
   const submitBtn=document.getElementById('regSubmit');
   let currentPlayerId=null; // not persisted as requested
+  let knownName=null;
 
   // hide coords until we check name
   coordsWrap.style.display='none';
 
-  async function maybeRenderAssignments(){ const st = (window.Api && Api.hasApi) ? await Api.getRegState() : loadReg(); if(currentPlayerId && st && st.started && st.endAt && Date.now()>=st.endAt){ renderAssignedForPlayer(currentPlayerId); } }
+  async function maybeRenderAssignments(){
+    const st = (window.Api && Api.hasApi) ? await Api.getRegState() : loadReg();
+    if (st && st.started && st.endAt && Date.now()>=st.endAt){
+      await resolveIdByName();
+      if (currentPlayerId) renderAssignedForPlayer(currentPlayerId);
+    }
+  }
   async function tick(){ await updateRegStatusUI(); await maybeRenderAssignments(); }
   setInterval(()=>{ tick(); },1000); tick();
 
@@ -217,6 +224,7 @@ async function main(){
         players.push(me); await savePlayers(players);
       }
       currentPlayerId = me.id;
+      knownName = name;
       // hide form after successful registration
       form.style.display='none';
       msg.style.display='block'; msg.textContent=`You are registered as ${me.name} (${me.x},${me.y}) · slots: ${me.slots}`;
@@ -224,6 +232,7 @@ async function main(){
     } else {
       // already registered by name
       currentPlayerId = existed.id;
+      knownName = existed.name;
       coordsWrap.style.display='none';
       // hide form for registered players
       form.style.display='none';
@@ -232,6 +241,14 @@ async function main(){
       maybeRenderAssignments();
     }
   });
+
+  // Fallback: if we lost ID (e.g. refresh), but know the name, resolve it on close
+  async function resolveIdByName(){
+    if (currentPlayerId || !knownName) return;
+    const list = await loadPlayers();
+    const found = list.find(p=>p.name.toLowerCase()===knownName.toLowerCase());
+    if (found) currentPlayerId = found.id;
+  }
 }
 
 document.addEventListener('DOMContentLoaded', main);
