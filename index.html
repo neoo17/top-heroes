@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Top Heroes — Swap Planner</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>Top Heroes — Invasion Trades</h1>
+      <div class="stats">
+        <span id="playerCount">Players: 0</span>
+      </div>
+    </header>
+
+    <main class="layout-grid">
+      <div class="top">
+        <aside class="panel sidebar">
+          <h2>Add Player</h2>
+          <form id="addPlayerForm" class="form">
+            <label>
+              Name
+              <input required id="name" name="name" placeholder="e.g. Varya" />
+            </label>
+            <div class="row">
+              <label>
+                X
+                <input required id="x" name="x" type="number" step="1" placeholder="0" />
+              </label>
+              <label>
+                Y
+                <input required id="y" name="y" type="number" step="1" placeholder="0" />
+              </label>
+            </div>
+            <label>
+              Slots (3–4)
+              <select id="slots" name="slots">
+                <option value="3">3</option>
+                <option value="4" selected>4</option>
+              </select>
+            </label>
+            <button type="submit">Add</button>
+            <button id="resetSample" type="button" class="secondary">Reset to sample</button>
+          </form>
+
+          <h2>Players</h2>
+          <div id="playerList" class="player-list"></div>
+        </aside>
+
+        <section class="panel map-panel">
+          <div class="legend">
+            <span class="badge q1">q1</span>
+            <span class="badge q2">q2</span>
+            <span class="badge q3">q3</span>
+            <span class="badge q4">q4</span>
+            <span class="hint">Lines show trade pairs. Dots are player castles.</span>
+          </div>
+          <canvas id="map" width="1100" height="750"></canvas>
+        </section>
+      </div>
+
+      <section class="panel bottom">
+        <h2>Players & Trades</h2>
+        <div id="playersView" class="players-grid"></div>
+        <h2>Unmatched Logs</h2>
+        <div id="logs" class="logs"></div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+  </html>
