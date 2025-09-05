@@ -79,9 +79,13 @@ function computePotential(players, matches) {
   return suggestionsByPlayer;
 }
 
-function renderAssignedForPlayer(playerId){
-  const players=loadPlayers();
-  const me=players.find(p=>p.id===playerId);
+async function renderAssignedForPlayer(playerId){
+  const players= await loadPlayers();
+  let me=players.find(p=>p.id===playerId);
+  if(!me && typeof knownName === 'string') {
+    me = players.find(p=>p.name.toLowerCase() === knownName.toLowerCase());
+    if (me) currentPlayerId = me.id;
+  }
   const box=document.getElementById('assignments');
   if(!me){ box.innerHTML='<div class="log-item">Player not found.</div>'; return; }
   const {matches}=computeMatches(players);
