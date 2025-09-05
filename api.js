@@ -45,6 +45,8 @@
     },
     async openRegistration(minutes){ if (this.hasApi){ await fetch(`${BASE}/api/reg/open`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ minutes }) }); } else { const endAt=Date.now()+minutes*60*1000; localStorage.setItem(REG_STATE_KEY, JSON.stringify({ started:true, endAt })); } },
     async adjustRegistration(deltaMs){ if (this.hasApi){ await fetch(`${BASE}/api/reg/adjust`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ deltaMs }) }); } else { try { const st=JSON.parse(localStorage.getItem(REG_STATE_KEY)||'{}'); if(st && st.endAt){ st.endAt += deltaMs; localStorage.setItem(REG_STATE_KEY, JSON.stringify(st)); } } catch {} } },
+    async closeRegistration(){ if (this.hasApi){ await fetch(`${BASE}/api/reg/close`, { method:'POST' }); } else { const st={ started:true, endAt: Date.now() }; localStorage.setItem(REG_STATE_KEY, JSON.stringify(st)); } },
+    async deletePlayer(id){ if (this.hasApi){ await fetch(`${BASE}/api/players/${id}`, { method:'DELETE' }); } else { try { const raw=localStorage.getItem(STORAGE_KEY); const arr=raw?JSON.parse(raw):[]; const next=arr.filter(p=>p.id!==id); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {} } },
     subscribe(onEvent){
       if (this.hasApi){
         try { const es = new EventSource(`${BASE}/api/stream`); es.onmessage = (e)=>{ try{ onEvent(JSON.parse(e.data)); } catch{} }; return ()=>es.close(); } catch { return ()=>{}; }

@@ -96,6 +96,9 @@ h2 {
 .btn-secondary:hover { filter: brightness(1.07); }
 .btn-outline { background: #0f1322; color: var(--text); border-color: #3a466e; }
 .btn-outline:hover { background: #1b223a; }
+.btn.loading { position: relative; pointer-events: none; opacity: .8; }
+.btn.loading::after { content: ""; position: absolute; right: 10px; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.6); border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* Map sidebar form buttons inherit .btn via markup now */
 
@@ -286,6 +289,10 @@ canvas#map { width: 100%; height: 100%; background: radial-gradient(1200px 800px
 .modal-header h3 { margin: 0; font-size: 14px; color: var(--muted); }
 .modal-close { background: transparent; border: none; color: var(--text); font-size: 22px; cursor: pointer; }
 .modal-body { padding: 14px; overflow: auto; background: #0f1322; border-radius: 0 0 12px 12px; }
+
+/* Page preloader */
+.page-loader { position: fixed; inset:0; z-index: 70; display: grid; place-items: center; background: rgba(10,13,26,.85); backdrop-filter: blur(2px); }
+.page-loader .spinner { width: 42px; height: 42px; border: 4px solid #5bbcff; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
 
 /* Registration status box (register.html) */
 .status-box {

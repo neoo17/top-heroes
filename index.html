@@ -16,6 +16,7 @@
           <button id="regStart" class="btn btn-primary">Open</button>
           <button id="regPlus" class="btn btn-secondary">+1m</button>
           <button id="regMinus" class="btn btn-outline">-30s</button>
+          <button id="regClose" class="btn btn-secondary">Close now</button>
         </div>
         <div class="stats">
           <span id="playerCount">Players: 0</span>
@@ -83,6 +84,9 @@
       </section>
     </main>
 
+    <!-- Page Preloader -->
+    <div id="pageLoader" class="page-loader"><div class="spinner"></div></div>
+
     <!-- Modal: Players list -->
     <div id="playersModal" class="modal hidden">
       <div class="modal-backdrop"></div>
@@ -93,6 +97,26 @@
         </div>
         <div class="modal-body">
           <div id="playerList" class="player-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Admin login -->
+    <div id="adminLoginModal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-dialog" style="max-width:420px">
+        <div class="modal-header"><h3>Admin Login</h3><button id="closeAdminLogin" class="modal-close">×</button></div>
+        <div class="modal-body">
+          <form id="adminLoginForm" class="form">
+            <label>Login
+              <input id="adminLogin" placeholder="mad" />
+            </label>
+            <label>Password
+              <input id="adminPass" type="password" placeholder="top1" />
+            </label>
+            <button type="submit" class="btn btn-primary full">Sign in</button>
+          </form>
+          <div id="adminLoginMsg" class="log-item" style="margin-top:10px; display:none"></div>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { listPlayers, upsertPlayer, deleteAllPlayers, getReg, setReg, adjustReg } from './db.js';
+import { listPlayers, upsertPlayer, deleteAllPlayers, deletePlayer, getReg, setReg, adjustReg } from './db.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -28,11 +28,13 @@ app.post('/api/players', (req,res)=>{
   res.json(p);
 });
 app.delete('/api/players', (req,res)=>{ deleteAllPlayers(); broadcast({ type:'players' }); res.json({ ok:true}); });
+app.delete('/api/players/:id', (req,res)=>{ const { id } = req.params; deletePlayer(id); broadcast({ type:'players' }); res.json({ ok:true }); });
 
 // registration state
 app.get('/api/reg-state', (req,res)=>{ res.json(getReg() || {}); });
 app.post('/api/reg/open', (req,res)=>{ const { minutes } = req.body || {}; const ms = Math.max(1, Number(minutes)||10) * 60 * 1000; const endAt = Date.now() + ms; setReg(true, endAt); broadcast({ type:'reg' }); res.json(getReg()); });
 app.post('/api/reg/adjust', (req,res)=>{ const { deltaMs } = req.body || {}; const st = adjustReg(Number(deltaMs)||0); broadcast({ type:'reg' }); res.json(st); });
+app.post('/api/reg/close', (req,res)=>{ setReg(true, Date.now()); broadcast({ type:'reg' }); res.json(getReg()); });
 
 // sse stream
 app.get('/api/stream', (req,res)=>{

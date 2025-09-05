@@ -40,10 +40,10 @@ export function upsertPlayer({name,x,y,slots}){
 }
 
 export function deleteAllPlayers(){ db.prepare('DELETE FROM players').run(); }
+export function deletePlayer(id){ db.prepare('DELETE FROM players WHERE id=?').run(id); }
 
 export function getReg(){ return db.prepare('SELECT started,endAt FROM reg_state WHERE id=1').get(); }
 export function setReg(started, endAt){ db.prepare('UPDATE reg_state SET started=?, endAt=? WHERE id=1').run(started?1:0, endAt||null); }
 export function adjustReg(deltaMs){ const r=getReg(); if(!r || !r.endAt) return getReg(); const endAt=r.endAt + deltaMs; setReg(true,endAt); return getReg(); }
 
 export default db;
-

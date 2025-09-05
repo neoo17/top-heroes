@@ -457,6 +457,8 @@ async function main() {
   const regStartBtn = document.getElementById('regStart');
   const regPlusBtn = document.getElementById('regPlus');
   const regMinusBtn = document.getElementById('regMinus');
+  const regCloseBtn = document.getElementById('regClose');
+  const pageLoader = document.getElementById('pageLoader');
 
   async function recomputeAndRender() {
     const { matches, unmatchedLogs } = computeMatches(players);
@@ -468,6 +470,7 @@ async function main() {
     drawMap(canvas, players, matches);
     updateStats(players);
     updateRegUI();
+    if (pageLoader) pageLoader.style.display = 'none';
   }
 
   // Форма добавления
@@ -545,11 +548,14 @@ async function main() {
   function isOpen(state){ const now=Date.now(); return state && state.started && state.endAt && now < state.endAt; }
   function leftFmt(ms){ const s=Math.floor(ms/1000)%60; const m=Math.floor(ms/60000)%60; const h=Math.floor(ms/3600000); return `${h? h+':':''}${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
   async function updateRegUI(){ const st = (window.Api && Api.hasApi) ? await Api.getRegState() : loadRegState(); const now=Date.now(); if(isOpen(st)){ regStatusEl.textContent = `Registration: OPEN — ${leftFmt(st.endAt-now)}`; regStartBtn.textContent='Restart'; regPlusBtn.disabled=false; regMinusBtn.disabled=false; } else if(st && st.started && st.endAt && now>=st.endAt){ regStatusEl.textContent='Registration: CLOSED'; regStartBtn.textContent='Open'; regPlusBtn.disabled=true; regMinusBtn.disabled=true; } else { regStatusEl.textContent='Registration: closed'; regStartBtn.textContent='Open'; regPlusBtn.disabled=true; regMinusBtn.disabled=true; }}
-  async function startReg(){ const mins=Math.max(1, Number(regMinutesEl.value)||10); if (window.Api && Api.hasApi) { await Api.openRegistration(mins); } else { const endAt=Date.now()+mins*60*1000; const st={started:true,endAt}; saveRegState(st); } updateRegUI(); }
-  async function adjustReg(deltaMs){ if (window.Api && Api.hasApi) { await Api.adjustRegistration(deltaMs); } else { const st=loadRegState(); if(!isOpen(st)) return; st.endAt += deltaMs; saveRegState(st); } updateRegUI(); }
+  function setBtnLoading(btn, loading){ if(!btn) return; if (loading){ btn.classList.add('loading'); btn.disabled = true; } else { btn.classList.remove('loading'); btn.disabled = false; } }
+  async function startReg(){ const mins=Math.max(1, Number(regMinutesEl.value)||10); setBtnLoading(regStartBtn,true); try { if (window.Api && Api.hasApi) { await Api.openRegistration(mins); } else { const endAt=Date.now()+mins*60*1000; const st={started:true,endAt}; saveRegState(st); } } finally { setBtnLoading(regStartBtn,false); updateRegUI(); } }
+  async function adjustReg(deltaMs){ const btn = deltaMs>0?regPlusBtn:regMinusBtn; setBtnLoading(btn,true); try { if (window.Api && Api.hasApi) { await Api.adjustRegistration(deltaMs); } else { const st=loadRegState(); if(!isOpen(st)) return; st.endAt += deltaMs; saveRegState(st); } } finally { setBtnLoading(btn,false); updateRegUI(); } }
+  async function closeRegNow(){ setBtnLoading(regCloseBtn,true); try { if (window.Api && Api.hasApi) { await Api.closeRegistration(); } else { const st={ started:true, endAt: Date.now() }; saveRegState(st); } } finally { setBtnLoading(regCloseBtn,false); updateRegUI(); } }
   regStartBtn?.addEventListener('click', startReg);
   regPlusBtn?.addEventListener('click', ()=>adjustReg(60*1000));
   regMinusBtn?.addEventListener('click', ()=>adjustReg(-30*1000));
+  regCloseBtn?.addEventListener('click', closeRegNow);
   setInterval(()=>{ updateRegUI(); }, 1000);
   updateRegUI();
 
@@ -565,6 +571,26 @@ async function main() {
       else if (e.key === REG_STATE_KEY) { updateRegUI(); }
     });
   }
+
+  // Admin login (very basic)
+  const ADMIN_LOGIN = 'mad';
+  const ADMIN_PASS = 'top1';
+  const loginModal = document.getElementById('adminLoginModal');
+  const loginForm = document.getElementById('adminLoginForm');
+  const loginMsg = document.getElementById('adminLoginMsg');
+  const enableAdminControls = (enabled)=>{
+    [regMinutesEl, regStartBtn, regPlusBtn, regMinusBtn, regCloseBtn, openPlayersBtn].forEach(b=>{ if(!b) return; b.disabled = !enabled; });
+  };
+  const hasAuth = localStorage.getItem('adminAuth') === '1';
+  if (!hasAuth){ enableAdminControls(false); loginModal?.classList.remove('hidden'); }
+  document.getElementById('closeAdminLogin')?.addEventListener('click', ()=> loginModal.classList.add('hidden'));
+  loginForm?.addEventListener('submit',(e)=>{
+    e.preventDefault();
+    const l = document.getElementById('adminLogin').value.trim();
+    const p = document.getElementById('adminPass').value;
+    if (l===ADMIN_LOGIN && p===ADMIN_PASS){ localStorage.setItem('adminAuth','1'); loginModal.classList.add('hidden'); enableAdminControls(true); loginMsg.style.display='none'; }
+    else { loginMsg.textContent='Invalid credentials'; loginMsg.style.display='block'; }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', main);
@@ -573,7 +599,7 @@ document.addEventListener('DOMContentLoaded', main);
 function renderSidebarList(container, players) {
   const items = players.map(p => `
     <div class="player-row" data-id="${p.id}">
-      <div class="header"><span class="arrow">▶</span><div class="title">${p.name}</div></div>
+      <div class="header"><span class="arrow">▶</span><div class="title">${p.name}</div><button class="btn btn-outline btn-del" style="padding:4px 8px;">Delete</button></div>
       <div class="details">
         <label>Name
           <input class="pl-field" data-field="name" value="${p.name}" />
@@ -627,6 +653,28 @@ function renderSidebarList(container, players) {
 
   // Тогглинг раскрытия
   container.onclick = (e) => {
+    const delBtn = e.target.closest('.btn-del');
+    if (delBtn) {
+      const row = delBtn.closest('.player-row');
+      const id = row?.dataset.id;
+      if (!id) return;
+      delBtn.classList.add('loading'); delBtn.disabled=true;
+      (async ()=>{
+        if (window.Api && Api.hasApi) { await Api.deletePlayer(id); players = await loadPlayers(); }
+        else { players = players.filter(p=>p.id!==id); await savePlayers(players); }
+        renderSidebarList(container, players);
+        const canvas = document.getElementById('map');
+        const playersViewEl = document.getElementById('playersView');
+        const logsEl = document.getElementById('logs');
+        const { matches, unmatchedLogs } = computeMatches(players);
+        const suggestions = computePotential(players, matches);
+        renderPlayersView(playersViewEl, players, matches, suggestions);
+        renderLogs(logsEl, unmatchedLogs);
+        drawMap(canvas, players, matches);
+        updateStats(players);
+      })();
+      return;
+    }
     const header = e.target.closest('.header');
     if (!header) return;
     const row = header.closest('.player-row');
