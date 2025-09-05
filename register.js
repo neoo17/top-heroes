@@ -136,8 +136,8 @@ function renderAssignedForPlayer(playerId){
   const arr=wrap.querySelector('.arrow'); if(arr) arr.textContent='▼';
 }
 
-function updateRegStatusUI(){
-  const st=loadReg();
+async function updateRegStatusUI(){
+  const st = (window.Api && Api.hasApi) ? await Api.getRegState() : loadReg();
   const text=document.getElementById('regStatusText');
   const box=document.getElementById('regTimerBox');
   const timer=document.getElementById('regTimerText');
@@ -160,7 +160,8 @@ function updateRegStatusUI(){
   }
 }
 
-function main(){
+async function main(){
+  if (window.Api) { await Api.init(); }
   const form=document.getElementById('regForm');
   const msg=document.getElementById('regMessage');
   const coordsWrap=document.getElementById('coordsWrap');
@@ -170,9 +171,9 @@ function main(){
   // hide coords until we check name
   coordsWrap.style.display='none';
 
-  function maybeRenderAssignments(){ const st=loadReg(); if(currentPlayerId && st.started && st.endAt && Date.now()>=st.endAt){ renderAssignedForPlayer(currentPlayerId); } }
-  function tick(){ updateRegStatusUI(); maybeRenderAssignments(); }
-  setInterval(tick,1000); tick();
+  async function maybeRenderAssignments(){ const st = (window.Api && Api.hasApi) ? await Api.getRegState() : loadReg(); if(currentPlayerId && st && st.started && st.endAt && Date.now()>=st.endAt){ renderAssignedForPlayer(currentPlayerId); } }
+  async function tick(){ await updateRegStatusUI(); await maybeRenderAssignments(); }
+  setInterval(()=>{ tick(); },1000); tick();
 
   // collapsibles
   document.querySelectorAll('.collapsible .collapsible-header').forEach(h=>{
