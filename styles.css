@@ -31,7 +31,20 @@ body {
 .topbar .stats { color: var(--muted); font-size: 13px; }
 .topbar-right { display: flex; align-items: center; gap: 10px; }
 .reg-panel { display: flex; align-items: center; gap: 8px; background: #12182b; border: 1px solid #232e52; border-radius: 10px; padding: 6px 8px; }
-.reg-status { color: #cfd5e3; font-size: 12px; margin-right: 4px; }
+.reg-status {
+  color: #cfd5e3;
+  font-size: 12px;
+  margin-right: 4px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid #232e52;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  letter-spacing: .2px;
+  display: inline-block;
+}
+.reg-status.open { background: linear-gradient(180deg,#103021,#0e241a); border-color: #1e5a3c; color: #d9f0e2; }
+.reg-status.closed { background: linear-gradient(180deg,#3a1116,#260c10); border-color: #5a2630; color: #f0d6d8; }
 .reg-input { width: 70px; height: 34px; background: #0f1322; border: 1px solid #242a44; color: var(--text); border-radius: 8px; padding: 0 8px; }
 
 .layout-grid {
@@ -96,6 +109,8 @@ h2 {
 .btn-secondary:hover { filter: brightness(1.07); }
 .btn-outline { background: #0f1322; color: var(--text); border-color: #3a466e; }
 .btn-outline:hover { background: #1b223a; }
+.btn-danger { background: linear-gradient(180deg,#ff6b6b,#ff4d4f); color: #140808; border-color: #ff4d4f; }
+.btn-danger:hover { filter: brightness(1.05); }
 .btn.loading { position: relative; pointer-events: none; opacity: .8; }
 .btn.loading::after { content: ""; position: absolute; right: 10px; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.6); border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -313,6 +328,22 @@ canvas#map { width: 100%; height: 100%; background: radial-gradient(1200px 800px
   .layout-grid .top { grid-template-columns: 300px minmax(0, 1fr); }
 }
 @media (max-width: 900px) {
+  .topbar { flex-direction: column; align-items: stretch; justify-content: flex-start; }
+  .topbar h1 { font-size: 16px; line-height: 1.2; flex: 1 1 100%; margin-bottom: 10px }
+  .topbar-right { width: 100%; display: block; margin-top: 6px; }
+  /* Растягиваем панель таймера на всю ширину */
+  .reg-panel {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 10px;
+    margin: 0; /* без смещения от краёв контейнера */
+  }
+  .reg-status { width: 100%; margin: 0; }
+  .reg-input { width: 100%; }
+  .reg-panel .btn { width: 100%; min-width: 0; }
+  .topbar .stats { width: 100%; text-align: left; margin-top: 10px; }
   .layout-grid .top { grid-template-columns: 1fr; }
   .sidebar { border-left: none; border-bottom: 1px solid #232842; }
   .map-panel { height: min(52vh, 520px); min-height: 280px; }

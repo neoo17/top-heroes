@@ -22,7 +22,7 @@ function defaultPlayers() {
   return [
     { id: uid(), name: 'Coppi',  x: 183, y: 409, slots: 4 },
     { id: uid(), name: 'UkKAmi', x: 183, y: 413, slots: 4 },
-    { id: uid(), name: 'Cookie', x: 191, y: 405, slots: 4 },
+    { id: uid(), name: 'Coocie', x: 191, y: 405, slots: 4 },
     { id: uid(), name: 'Vanm',   x: 195, y: 417, slots: 4 },
     { id: uid(), name: 'tea',    x: 171, y: 405, slots: 4 },
     { id: uid(), name: 'CHT',    x: 195, y: 393, slots: 4 },
@@ -547,7 +547,24 @@ async function main() {
   // Registration logic
   function isOpen(state){ const now=Date.now(); return state && state.started && state.endAt && now < state.endAt; }
   function leftFmt(ms){ const s=Math.floor(ms/1000)%60; const m=Math.floor(ms/60000)%60; const h=Math.floor(ms/3600000); return `${h? h+':':''}${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
-  async function updateRegUI(){ const st = (window.Api && Api.hasApi) ? await Api.getRegState() : loadRegState(); const now=Date.now(); if(isOpen(st)){ regStatusEl.textContent = `Registration: OPEN — ${leftFmt(st.endAt-now)}`; regStartBtn.textContent='Restart'; regPlusBtn.disabled=false; regMinusBtn.disabled=false; } else if(st && st.started && st.endAt && now>=st.endAt){ regStatusEl.textContent='Registration: CLOSED'; regStartBtn.textContent='Open'; regPlusBtn.disabled=true; regMinusBtn.disabled=true; } else { regStatusEl.textContent='Registration: closed'; regStartBtn.textContent='Open'; regPlusBtn.disabled=true; regMinusBtn.disabled=true; }}
+  async function updateRegUI(){
+    const st = (window.Api && Api.hasApi) ? await Api.getRegState() : loadRegState();
+    const now=Date.now();
+    if(isOpen(st)){
+      regStatusEl.textContent = `Registration: OPEN — ${leftFmt(st.endAt-now)}`;
+      regStartBtn.textContent='Restart';
+      regPlusBtn.disabled=false; regMinusBtn.disabled=false;
+      if (regCloseBtn){ regCloseBtn.disabled=false; regCloseBtn.classList.add('btn-danger'); regCloseBtn.classList.remove('btn-secondary'); }
+    } else if(st && st.started && st.endAt && now>=st.endAt){
+      regStatusEl.textContent='Registration: CLOSED'; regStartBtn.textContent='Open';
+      regPlusBtn.disabled=true; regMinusBtn.disabled=true;
+      if (regCloseBtn){ regCloseBtn.disabled=true; regCloseBtn.classList.remove('btn-danger'); regCloseBtn.classList.add('btn-secondary'); }
+    } else {
+      regStatusEl.textContent='Registration: closed'; regStartBtn.textContent='Open';
+      regPlusBtn.disabled=true; regMinusBtn.disabled=true;
+      if (regCloseBtn){ regCloseBtn.disabled=true; regCloseBtn.classList.remove('btn-danger'); regCloseBtn.classList.add('btn-secondary'); }
+    }
+  }
   function setBtnLoading(btn, loading){ if(!btn) return; if (loading){ btn.classList.add('loading'); btn.disabled = true; } else { btn.classList.remove('loading'); btn.disabled = false; } }
   async function startReg(){ const mins=Math.max(1, Number(regMinutesEl.value)||10); setBtnLoading(regStartBtn,true); try { if (window.Api && Api.hasApi) { await Api.openRegistration(mins); } else { const endAt=Date.now()+mins*60*1000; const st={started:true,endAt}; saveRegState(st); } } finally { setBtnLoading(regStartBtn,false); updateRegUI(); } }
   async function adjustReg(deltaMs){ const btn = deltaMs>0?regPlusBtn:regMinusBtn; setBtnLoading(btn,true); try { if (window.Api && Api.hasApi) { await Api.adjustRegistration(deltaMs); } else { const st=loadRegState(); if(!isOpen(st)) return; st.endAt += deltaMs; saveRegState(st); } } finally { setBtnLoading(btn,false); updateRegUI(); } }
@@ -583,7 +600,7 @@ async function main() {
   };
   const hasAuth = localStorage.getItem('adminAuth') === '1';
   if (!hasAuth){ enableAdminControls(false); loginModal?.classList.remove('hidden'); }
-  document.getElementById('closeAdminLogin')?.addEventListener('click', ()=> loginModal.classList.add('hidden'));
+  // Нельзя закрыть модалку логина без ввода корректных данных
   loginForm?.addEventListener('submit',(e)=>{
     e.preventDefault();
     const l = document.getElementById('adminLogin').value.trim();
