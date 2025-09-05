@@ -18,7 +18,7 @@
 
   const Api = {
     hasApi: false,
-    async init(){ this.hasApi = await detectApi(); return this.hasApi; },
+    async init(){ this.hasApi = await detectApi(); if (typeof console !== 'undefined') console.info('[API] mode:', this.hasApi ? `external ${BASE||''}` : 'localStorage'); return this.hasApi; },
     async getPlayers(){
       if (this.hasApi){ const r = await fetch(`${BASE}/api/players`); return r.json(); }
       try { const raw = localStorage.getItem(STORAGE_KEY); const arr = raw? JSON.parse(raw): []; return Array.isArray(arr)? arr: []; } catch { return []; }
