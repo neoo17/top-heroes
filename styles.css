@@ -32,8 +32,7 @@ body {
 
 .layout-grid {
   display: grid;
-  grid-template-rows: 1fr auto; /* верх занимает оставшееся, низ по контенту */
-  height: calc(100% - 50px);
+  grid-template-rows: auto auto; /* обе секции по контенту, вся страница скроллится */
 }
 .layout-grid .top {
   display: grid;
@@ -41,16 +40,15 @@ body {
   min-height: 480px;
 }
 .panel { padding: 16px 18px; }
-.map-panel { position: relative; overflow: hidden; }
+.map-panel { position: relative; overflow: hidden; height: clamp(520px, 72vh, 900px); }
 .sidebar {
-  border-left: 1px solid #232842;
+  border-right: 1px solid #232842;
   background: var(--panel);
-  overflow: auto;
+  padding-bottom: 16px;
 }
 .bottom {
   border-top: 1px solid #232842;
   background: var(--panel);
-  overflow-x: hidden;
   padding-bottom: 16px;
 }
 
@@ -64,28 +62,38 @@ h2 {
 
 .form { display: grid; gap: 10px; }
 .form label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
-.form input, .form select {
+.form input, .form select,
+.player-row input, .player-row select {
   background: #0f1322;
   border: 1px solid #242a44;
   color: var(--text);
-  padding: 8px 10px;
-  border-radius: 6px;
-}
-.form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.form button {
-  background: var(--accent);
-  color: #07111b;
-  font-weight: 600;
-  border: none;
   padding: 10px 12px;
-  border-radius: 8px;
-  cursor: pointer;
+  border-radius: 10px;
+  width: 100%;
+  height: 40px;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
 }
-.form button.secondary {
-  background: #273456;
-  color: var(--text);
+.form input::placeholder { color: #6b7384; }
+.form input:focus, .form select:focus,
+.player-row input:focus, .player-row select:focus {
+  border-color: #3a66ff;
+  box-shadow: 0 0 0 3px rgba(90,130,255,0.25);
 }
-.form button:hover { filter: brightness(1.05); }
+.form .row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; }
+.form .row label { width: 100%; }
+.form button { width: 100%; }
+.btn { appearance: none; border: 1px solid transparent; border-radius: 10px; padding: 10px 14px; font-weight: 600; cursor: pointer; transition: transform .05s ease, filter .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.btn:active { transform: translateY(1px); }
+.btn.full { width: 100%; }
+.btn-primary { background: linear-gradient(180deg,#66c6ff,#5bbcff); color: #041018; box-shadow: inset 0 -1px 0 rgba(0,0,0,.1); }
+.btn-primary:hover { filter: brightness(1.05); }
+.btn-secondary { background: #273456; color: var(--text); border-color: #2f3b66; box-shadow: inset 0 -1px 0 rgba(0,0,0,.2); }
+.btn-secondary:hover { filter: brightness(1.07); }
+.btn-outline { background: #0f1322; color: var(--text); border-color: #3a466e; }
+.btn-outline:hover { background: #1b223a; }
+
+/* Map sidebar form buttons inherit .btn via markup now */
 
 .matches, .logs { display: grid; gap: 8px; font-size: 13px; }
 .match-item, .log-item {
@@ -185,16 +193,16 @@ canvas#map { width: 100%; height: 100%; background: radial-gradient(1200px 800px
 .flow-item .small { color: var(--muted); font-size: 12px; }
 
 /* Sidebar player list */
-.player-list { display: grid; gap: 10px; }
+.player-list { display: grid; gap: 12px; }
 .player-row {
   background: #0f1322;
-  border: 1px solid #242a44;
-  border-radius: 8px;
-  padding: 10px;
+  border: 1px solid #2a3356;
+  border-radius: 12px;
+  padding: 10px 12px;
 }
-.player-row .header { display:flex; align-items:center; gap:8px; cursor:pointer; }
-.player-row .arrow { color: var(--muted); font-size: 12px; }
-.player-row .details { display: none; margin-top: 8px; }
+.player-row .header { display:flex; align-items:center; gap:10px; cursor:pointer; padding: 4px 2px; }
+.player-row .arrow { color: var(--muted); font-size: 12px; margin-left: auto; }
+.player-row .details { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #2a3356; }
 .player-row.open .details { display: grid; gap: 8px; }
 .player-row .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .player-row .title { font-weight: 600; }
@@ -221,3 +229,45 @@ canvas#map { width: 100%; height: 100%; background: radial-gradient(1200px 800px
 .pot-item .who { font-weight: 600; }
 .pot-item .small { color: var(--muted); font-size: 12px; }
 .badge.lock { background: #8b8f9c; color: #0b1020; }
+
+/* Collapsible blocks */
+.collapsible { border: 1px solid #242a44; border-radius: 8px; padding: 8px; background: #0f1322; }
+.collapsible + .collapsible { margin-top: 10px; }
+.collapsible-header { display:flex; align-items:center; justify-content: space-between; cursor:pointer; user-select:none; }
+.collapsible-header .arrow { color: var(--muted); font-size: 12px; margin-left: 8px; }
+.collapsible-body { display: none; margin-top: 8px; }
+.collapsible.open .collapsible-body { display: block; }
+
+/* Modal */
+.modal.hidden { display: none; }
+.modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(2px); }
+.modal-dialog {
+  position: relative;
+  width: min(920px, 92vw);
+  max-height: 86vh;
+  background: #141a2c;
+  border: 1px solid #273056;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+.modal-header { display:flex; align-items:center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid #273056; background: #101627; border-radius: 12px 12px 0 0; }
+.modal-header h3 { margin: 0; font-size: 14px; color: var(--muted); }
+.modal-close { background: transparent; border: none; color: var(--text); font-size: 22px; cursor: pointer; }
+.modal-body { padding: 14px; overflow: auto; background: #0f1322; border-radius: 0 0 12px 12px; }
+
+/* Responsive tweaks */
+@media (max-width: 1200px) {
+  .layout-grid .top { grid-template-columns: 300px minmax(0, 1fr); }
+}
+@media (max-width: 900px) {
+  .layout-grid .top { grid-template-columns: 1fr; }
+  .sidebar { border-left: none; border-bottom: 1px solid #232842; }
+  .map-panel { height: min(52vh, 520px); min-height: 280px; }
+  .legend .hint { display: none; }
+  .flows { grid-template-columns: 1fr; }
+  .panel { padding: 12px 14px; }
+  .form button { width: 100%; }
+}

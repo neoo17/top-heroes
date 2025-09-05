@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Top Heroes — Swap Planner</title>
+    <title>MAD — Swap Planner</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header class="topbar">
-      <h1>Top Heroes — Invasion Trades</h1>
+      <h1>MAD — Swap Planner</h1>
       <div class="stats">
         <span id="playerCount">Players: 0</span>
       </div>
@@ -17,35 +17,41 @@
     <main class="layout-grid">
       <div class="top">
         <aside class="panel sidebar">
-          <h2>Add Player</h2>
-          <form id="addPlayerForm" class="form">
-            <label>
-              Name
-              <input required id="name" name="name" placeholder="e.g. Varya" />
-            </label>
-            <div class="row">
-              <label>
-                X
-                <input required id="x" name="x" type="number" step="1" placeholder="0" />
-              </label>
-              <label>
-                Y
-                <input required id="y" name="y" type="number" step="1" placeholder="0" />
-              </label>
+          <section id="addCollapsible" class="collapsible open">
+            <div class="collapsible-header">
+              <h2 style="margin:0">Add Player</h2>
+              <span class="arrow">▼</span>
             </div>
-            <label>
-              Slots (3–4)
-              <select id="slots" name="slots">
-                <option value="3">3</option>
-                <option value="4" selected>4</option>
-              </select>
-            </label>
-            <button type="submit">Add</button>
-            <button id="resetSample" type="button" class="secondary">Reset to sample</button>
-          </form>
+            <div class="collapsible-body">
+              <form id="addPlayerForm" class="form">
+                <label>
+                  Name
+                  <input required id="name" name="name" placeholder="e.g. Varya" />
+                </label>
+                <div class="row">
+                  <label>
+                    X
+                    <input required id="x" name="x" type="number" step="1" placeholder="0" />
+                  </label>
+                  <label>
+                    Y
+                    <input required id="y" name="y" type="number" step="1" placeholder="0" />
+                  </label>
+                </div>
+                <label>
+                  Slots (3–4)
+                  <select id="slots" name="slots">
+                    <option value="3">3</option>
+                    <option value="4" selected>4</option>
+                  </select>
+                </label>
+                <button type="submit" class="btn btn-primary full">Add</button>
+                <button id="resetSample" type="button" class="btn btn-outline full">Reset to sample</button>
+              </form>
+            </div>
+          </section>
 
-          <h2>Players</h2>
-          <div id="playerList" class="player-list"></div>
+          <button id="openPlayersBtn" type="button" class="btn btn-secondary full" style="margin-top:10px">Manage players…</button>
         </aside>
 
         <section class="panel map-panel">
@@ -67,6 +73,20 @@
         <div id="logs" class="logs"></div>
       </section>
     </main>
+
+    <!-- Modal: Players list -->
+    <div id="playersModal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3>Players</h3>
+          <button id="closePlayersModal" class="modal-close" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body">
+          <div id="playerList" class="player-list"></div>
+        </div>
+      </div>
+    </div>
 
     <script src="app.js"></script>
   </body>

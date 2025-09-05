@@ -21,7 +21,7 @@ function defaultPlayers() {
   return [
     { id: uid(), name: 'Coppi',  x: 183, y: 409, slots: 4 },
     { id: uid(), name: 'UkKAmi', x: 183, y: 413, slots: 4 },
-    { id: uid(), name: 'Coocie', x: 191, y: 405, slots: 4 },
+    { id: uid(), name: 'Cookie', x: 191, y: 405, slots: 4 },
     { id: uid(), name: 'Vanm',   x: 195, y: 417, slots: 4 },
     { id: uid(), name: 'tea',    x: 171, y: 405, slots: 4 },
     { id: uid(), name: 'CHT',    x: 195, y: 393, slots: 4 },
@@ -439,6 +439,9 @@ function main() {
   const playersViewEl = document.getElementById('playersView');
   const logsEl = document.getElementById('logs');
   const listEl = document.getElementById('playerList');
+  const openPlayersBtn = document.getElementById('openPlayersBtn');
+  const playersModal = document.getElementById('playersModal');
+  const closePlayersModal = document.getElementById('closePlayersModal');
 
   function recomputeAndRender() {
     const { matches, unmatchedLogs } = computeMatches(players);
@@ -485,6 +488,37 @@ function main() {
     const { matches } = computeMatches(players);
     drawMap(canvas, players, matches);
   });
+
+  // Collapsible for Add Player (collapsed by default on mobile widths)
+  const addCollapsible = document.getElementById('addCollapsible');
+  const header = addCollapsible?.querySelector('.collapsible-header');
+  if (header) {
+    header.addEventListener('click', () => {
+      const open = addCollapsible.classList.toggle('open');
+      const arrow = addCollapsible.querySelector('.arrow');
+      if (arrow) arrow.textContent = open ? '▼' : '▶';
+    });
+  }
+  // collapse if small screen on load
+  if (window.matchMedia('(max-width: 900px)').matches) {
+    if (addCollapsible && addCollapsible.classList.contains('open')) {
+      addCollapsible.classList.remove('open');
+      const arrow = addCollapsible.querySelector('.arrow');
+      if (arrow) arrow.textContent = '▶';
+    }
+  }
+  // Modal open/close
+  function openModal() {
+    playersModal.classList.remove('hidden');
+    renderSidebarList(listEl, players); // ensure fresh list
+  }
+  function closeModal() { playersModal.classList.add('hidden'); }
+  openPlayersBtn?.addEventListener('click', openModal);
+  closePlayersModal?.addEventListener('click', closeModal);
+  playersModal?.addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal-backdrop')) closeModal();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 }
 
 document.addEventListener('DOMContentLoaded', main);
