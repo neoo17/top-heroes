@@ -3,14 +3,23 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>MAD — Swap Planner</title>
+    <title>Top Heroes — Swap Planner</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header class="topbar">
-      <h1>MAD — Swap Planner</h1>
-      <div class="stats">
-        <span id="playerCount">Players: 0</span>
+      <h1>Top Heroes — Invasion Trades</h1>
+      <div class="topbar-right">
+        <div class="reg-panel">
+          <span id="regStatus" class="reg-status">Registration: closed</span>
+          <input id="regMinutes" type="number" min="1" step="1" value="10" class="reg-input" title="Minutes" />
+          <button id="regStart" class="btn btn-primary">Open</button>
+          <button id="regPlus" class="btn btn-secondary">+1m</button>
+          <button id="regMinus" class="btn btn-outline">-30s</button>
+        </div>
+        <div class="stats">
+          <span id="playerCount">Players: 0</span>
+        </div>
       </div>
     </header>
 
@@ -88,6 +97,8 @@
       </div>
     </div>
 
+    <script src="config.js"></script>
+    <script src="api.js"></script>
     <script src="app.js"></script>
   </body>
   </html>

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Top Heroes — Registration</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>Top Heroes — Registration</h1>
+      <div class="stats"><a href="index.html" style="color:#9aa3b2; text-decoration:none">Admin</a></div>
+    </header>
+
+    <main class="layout-grid">
+      <section class="panel" style="max-width:760px; margin: 0 auto; width:100%">
+        <div class="collapsible open" id="regInfo">
+          <div class="collapsible-header">
+            <h2 style="margin:0">Registration status</h2>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="collapsible-body">
+            <div id="regStatusText" style="font-size:14px; color:#cfd5e3; margin-bottom:8px"></div>
+            <div id="regTimerBox" class="status-box">
+              <div class="status-row">
+                <span class="label">Timer</span>
+                <span id="regTimerText" class="timer">--:--</span>
+              </div>
+              <div class="status-hint">This is a shared timer started by R5/R4.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible open" id="formWrap">
+          <div class="collapsible-header">
+            <h2 style="margin:0">Player info</h2>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="collapsible-body">
+            <form id="regForm" class="form">
+              <label>Name
+                <input required id="r_name" placeholder="e.g. Coppi" />
+              </label>
+              <div id="coordsWrap">
+                <div class="row">
+                  <label>X
+                    <input id="r_x" type="number" step="1" placeholder="0" />
+                  </label>
+                  <label>Y
+                    <input id="r_y" type="number" step="1" placeholder="0" />
+                  </label>
+                </div>
+                <label>Slots (3–4)
+                  <select id="r_slots">
+                    <option value="3">3</option>
+                    <option value="4" selected>4</option>
+                  </select>
+                </label>
+              </div>
+              <button type="submit" class="btn btn-primary" id="regSubmit">Submit</button>
+            </form>
+            <div id="regMessage" class="log-item" style="margin-top:8px; display:none"></div>
+          </div>
+        </div>
+
+        <div class="collapsible" id="assignWrap">
+          <div class="collapsible-header">
+            <h2 style="margin:0">Your trades</h2>
+            <span class="arrow">▶</span>
+          </div>
+          <div class="collapsible-body">
+            <div id="assignments" class="matches"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script src="register.js"></script>
+  </body>
+  </html>

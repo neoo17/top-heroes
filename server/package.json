@@ -1,0 +1,14 @@
+{
+  "name": "top-heroes-server",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "better-sqlite3": "^9.4.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "nanoid": "^5.0.6"
+  },
+  "scripts": {
+    "start": "PORT=3006 node server.js"
+  }
+}

@@ -4,6 +4,7 @@
 // - q2,q3,q4: с любым, но одна пара игроков может обменяться только одним персонажем в сумме
 
 const STORAGE_KEY = 'topHeroesPlayers';
+const REG_STATE_KEY = 'topHeroesRegistration';
 
 function distance(a, b) {
   const dx = a.x - b.x;
@@ -21,7 +22,7 @@ function defaultPlayers() {
   return [
     { id: uid(), name: 'Coppi',  x: 183, y: 409, slots: 4 },
     { id: uid(), name: 'UkKAmi', x: 183, y: 413, slots: 4 },
-    { id: uid(), name: 'Cookie', x: 191, y: 405, slots: 4 },
+    { id: uid(), name: 'Coocie', x: 191, y: 405, slots: 4 },
     { id: uid(), name: 'Vanm',   x: 195, y: 417, slots: 4 },
     { id: uid(), name: 'tea',    x: 171, y: 405, slots: 4 },
     { id: uid(), name: 'CHT',    x: 195, y: 393, slots: 4 },
@@ -29,28 +30,36 @@ function defaultPlayers() {
   ];
 }
 
-function loadPlayers() {
+async function loadPlayers() {
+  // If API available, use it; otherwise localStorage fallback as before
+  if (window.Api && (await Api.init())) {
+    const list = await Api.getPlayers();
+    return Array.isArray(list) && list.length ? list : [];
+  }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultPlayers();
     const data = JSON.parse(raw);
     if (!Array.isArray(data)) return defaultPlayers();
-    // Если это старая демо-выборка — заменим на реальные
     const OLD = new Set(['Ares','Varya','Loki','Mira','Grom','Tara','Zed','Noir']);
     if (data.length && data.every(p => OLD.has(p.name))) {
       const fresh = defaultPlayers();
-      savePlayers(fresh);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
       return fresh;
     }
     return data;
-  } catch (_) {
-    return defaultPlayers();
-  }
+  } catch { return defaultPlayers(); }
 }
 
-function savePlayers(players) {
+async function savePlayers(players) {
+  if (window.Api && Api.hasApi) { await Api.replaceAll(players); return; }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(players));
 }
+
+function loadRegState() {
+  try { return JSON.parse(localStorage.getItem(REG_STATE_KEY) || '{}'); } catch { return {}; }
+}
+function saveRegState(state) { localStorage.setItem(REG_STATE_KEY, JSON.stringify(state)); }
 
 // Подбор обменов
 // Возвращает:
@@ -431,8 +440,8 @@ function updateStats(players) {
   el.textContent = `Players: ${players.length}`;
 }
 
-function main() {
-  let players = loadPlayers();
+async function main() {
+  let players = await loadPlayers();
   updateStats(players);
 
   const canvas = document.getElementById('map');
@@ -442,8 +451,14 @@ function main() {
   const openPlayersBtn = document.getElementById('openPlayersBtn');
   const playersModal = document.getElementById('playersModal');
   const closePlayersModal = document.getElementById('closePlayersModal');
+  // registration controls
+  const regStatusEl = document.getElementById('regStatus');
+  const regMinutesEl = document.getElementById('regMinutes');
+  const regStartBtn = document.getElementById('regStart');
+  const regPlusBtn = document.getElementById('regPlus');
+  const regMinusBtn = document.getElementById('regMinus');
 
-  function recomputeAndRender() {
+  async function recomputeAndRender() {
     const { matches, unmatchedLogs } = computeMatches(players);
     const suggestions = computePotential(players, matches);
     renderPlayersView(playersViewEl, players, matches, suggestions);
@@ -452,11 +467,12 @@ function main() {
     resizeCanvasToContainer(canvas);
     drawMap(canvas, players, matches);
     updateStats(players);
+    updateRegUI();
   }
 
   // Форма добавления
   const form = document.getElementById('addPlayerForm');
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('name').value.trim();
     const x = Number(document.getElementById('x').value);
@@ -465,25 +481,30 @@ function main() {
     if (!name) return;
     if (!Number.isFinite(x) || !Number.isFinite(y)) return;
     if (slots < 3 || slots > 4) return;
-    players.push({ id: uid(), name, x, y, slots });
-    savePlayers(players);
+    if (window.Api && Api.hasApi) {
+      const created = await Api.addPlayer({ name, x, y, slots });
+      players = await loadPlayers();
+    } else {
+      players.push({ id: uid(), name, x, y, slots });
+      await savePlayers(players);
+    }
     form.reset();
     document.getElementById('slots').value = String(slots);
-    recomputeAndRender();
+    await recomputeAndRender();
   });
 
   // Сброс к демо-данным
-  document.getElementById('resetSample').addEventListener('click', () => {
+  document.getElementById('resetSample').addEventListener('click', async () => {
     players = defaultPlayers();
-    savePlayers(players);
-    recomputeAndRender();
+    await savePlayers(players);
+    await recomputeAndRender();
   });
 
   // Первичный рендер
-  recomputeAndRender();
+  await recomputeAndRender();
 
   // Ресайз окна — подгоняем канвас и перерисовываем
-  window.addEventListener('resize', () => {
+  window.addEventListener('resize', async () => {
     resizeCanvasToContainer(canvas);
     const { matches } = computeMatches(players);
     drawMap(canvas, players, matches);
@@ -519,6 +540,31 @@ function main() {
     if (e.target.classList.contains('modal-backdrop')) closeModal();
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  // Registration logic
+  function isOpen(state){ const now=Date.now(); return state && state.started && state.endAt && now < state.endAt; }
+  function leftFmt(ms){ const s=Math.floor(ms/1000)%60; const m=Math.floor(ms/60000)%60; const h=Math.floor(ms/3600000); return `${h? h+':':''}${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+  async function updateRegUI(){ const st = (window.Api && Api.hasApi) ? await Api.getRegState() : loadRegState(); const now=Date.now(); if(isOpen(st)){ regStatusEl.textContent = `Registration: OPEN — ${leftFmt(st.endAt-now)}`; regStartBtn.textContent='Restart'; regPlusBtn.disabled=false; regMinusBtn.disabled=false; } else if(st && st.started && st.endAt && now>=st.endAt){ regStatusEl.textContent='Registration: CLOSED'; regStartBtn.textContent='Open'; regPlusBtn.disabled=true; regMinusBtn.disabled=true; } else { regStatusEl.textContent='Registration: closed'; regStartBtn.textContent='Open'; regPlusBtn.disabled=true; regMinusBtn.disabled=true; }}
+  async function startReg(){ const mins=Math.max(1, Number(regMinutesEl.value)||10); if (window.Api && Api.hasApi) { await Api.openRegistration(mins); } else { const endAt=Date.now()+mins*60*1000; const st={started:true,endAt}; saveRegState(st); } updateRegUI(); }
+  async function adjustReg(deltaMs){ if (window.Api && Api.hasApi) { await Api.adjustRegistration(deltaMs); } else { const st=loadRegState(); if(!isOpen(st)) return; st.endAt += deltaMs; saveRegState(st); } updateRegUI(); }
+  regStartBtn?.addEventListener('click', startReg);
+  regPlusBtn?.addEventListener('click', ()=>adjustReg(60*1000));
+  regMinusBtn?.addEventListener('click', ()=>adjustReg(-30*1000));
+  setInterval(()=>{ updateRegUI(); }, 1000);
+  updateRegUI();
+
+  // Cross-tab realtime updates: reflect registrations and timer changes without reload
+  if (window.Api && Api.hasApi) {
+    Api.subscribe(async (ev) => {
+      if (ev.type === 'players') { players = await loadPlayers(); await recomputeAndRender(); }
+      if (ev.type === 'reg') { updateRegUI(); }
+    });
+  } else {
+    window.addEventListener('storage', async (e) => {
+      if (e.key === STORAGE_KEY) { players = await loadPlayers(); await recomputeAndRender(); }
+      else if (e.key === REG_STATE_KEY) { updateRegUI(); }
+    });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', main);
