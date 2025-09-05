@@ -187,7 +187,7 @@ async function main(){
 
     const players= await loadPlayers();
     const existed=players.find(p=>p.name.toLowerCase()===name.toLowerCase());
-    const st=loadReg();
+    const st = (window.Api && Api.hasApi) ? await Api.getRegState() : loadReg();
 
     if(!existed){
       // not registered yet -> two‑step submit: first show coords, next actually register
@@ -209,9 +209,10 @@ async function main(){
       if(!(st.started && st.endAt && Date.now()<st.endAt)){
         msg.style.display='block'; msg.textContent='Registration is not open yet.'; return;
       }
-      const me={ id: uid(), name, x, y, slots };
+      let me={ id: uid(), name, x, y, slots };
       if (window.Api && Api.hasApi) {
-        await Api.addPlayer({ name, x, y, slots });
+        const created = await Api.addPlayer({ name, x, y, slots });
+        if (created && created.id) me.id = created.id;
       } else {
         players.push(me); await savePlayers(players);
       }
